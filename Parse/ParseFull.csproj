@@ -8,8 +8,8 @@
     <ProjectGuid>{228A0996-6132-407D-8FC4-C74A7C3F0F13}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Parse2</RootNamespace>
-    <AssemblyName>Parse2</AssemblyName>
+    <RootNamespace>Parse</RootNamespace>
+    <AssemblyName>Parse</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -18,16 +18,16 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <OutputPath>bin\Debug\Full\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DISABLE_ASYNC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>bin\Release\Full\</OutputPath>
+    <DefineConstants>TRACE;DISABLE_ASYNC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -65,9 +65,6 @@
     <Compile Include="Queries\UpdateQuery.cs" />
     <Compile Include="Queries\WhereTranslator.cs" />
     <Compile Include="Users.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Parse.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

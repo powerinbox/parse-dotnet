@@ -36,19 +36,6 @@ namespace Parse
          SendQueryPayload(method, endPoint, query, false, callback);
       }
 
-      public static void SendQueryPayload<T>(string method, string endPoint, string query, bool includeMasterKey, Action<Response<T>> callback)
-      {
-         var request = BuildRequest(method, endPoint, query, callback);
-         if (request != null)
-         {
-            if (includeMasterKey)
-            {
-               request.Headers["X-Parse-Master-Key"] = ParseConfiguration.Configuration.MasterKey;
-            }
-            request.BeginGetResponse(GetResponseStream<T>, new RequestState<T> { Request = request, Callback = callback });
-         }
-      }
-
       public static void SendDataPayload<T>(string method, string endPoint, string payload, Action<Response<T>> callback)
       {
          SendDataPayload(method, endPoint, payload, "application/json", callback);
@@ -57,16 +44,6 @@ namespace Parse
       public static void SendDataPayload<T>(string method, string endPoint, string payload, string contentType, Action<Response<T>> callback)
       {
          SendDataPayload(method, endPoint, Encoding.UTF8.GetBytes(payload), contentType, callback);
-      }
-
-      public static void SendDataPayload<T>(string method, string endPoint, byte[] payload, string contentType, Action<Response<T>> callback)
-      {
-         var request = BuildRequest(method, endPoint, null, callback);
-         if (request != null)
-         {
-            request.ContentType = contentType;
-            request.BeginGetRequestStream(GetRequestStream<T>, new RequestState<T> { Request = request, Payload = payload, Callback = callback });
-         }
       }
 
       private static HttpWebRequest BuildRequest<T>(string method, string endPoint, string queryString, Action<Response<T>> callback)
@@ -88,34 +65,6 @@ namespace Parse
          request.Headers["X-Parse-Application-Id"] = configuration.ApplicationId;
          request.Headers["X-Parse-REST-API-Key"] = configuration.RestApiKey;
          return request;
-      }
-
-      private static void GetRequestStream<T>(IAsyncResult result)
-      {
-         var state = (RequestState<T>)result.AsyncState;
-         using (var requestStream = state.Request.EndGetRequestStream(result))
-         {
-            requestStream.Write(state.Payload, 0, state.Payload.Length);
-            requestStream.Flush();
-            requestStream.Close();
-         }
-         state.Request.BeginGetResponse(GetResponseStream<T>, state);
-      }
-
-      private static void GetResponseStream<T>(IAsyncResult result)
-      {
-         var state = (ResponseState<T>)result.AsyncState;
-         try
-         {
-            using (var response = (HttpWebResponse)state.Request.EndGetResponse(result))
-            {
-               if (state.Callback != null) { state.Callback(Response<T>.CreateSuccess(GetResponseBody(response))); }
-            }
-         }
-         catch (Exception ex)
-         {
-            if (state.Callback != null) { state.Callback(Response<T>.CreateError(HandleException(ex))); }
-         }
       }
 
       private static string DictionaryToQueryString(IEnumerable<KeyValuePair<string, object>> payload)
@@ -200,9 +149,100 @@ namespace Parse
          public Action<Response<T>> Callback { get; set; }
       }
 
-      private class RequestState<T> : ResponseState<T> 
-      {         
+      private class RequestState<T> : ResponseState<T>
+      {
          public byte[] Payload { get; set; }
       }
+
+
+      public static void SendQueryPayload<T>(string method, string endPoint, string query, bool includeMasterKey, Action<Response<T>> callback)
+      {
+         var request = BuildRequest(method, endPoint, query, callback);
+         if (request != null)
+         {
+            if (includeMasterKey)
+            {
+               request.Headers["X-Parse-Master-Key"] = ParseConfiguration.Configuration.MasterKey;
+            }
+
+#if DISABLE_ASYNC
+            ProcessResponse(request, new RequestState<T> { Request = request, Callback = callback });
+#else
+            request.BeginGetResponse(GetResponseStream<T>, new RequestState<T> { Request = request, Callback = callback });
+#endif
+         }
+      }
+
+      public static void SendDataPayload<T>(string method, string endPoint, byte[] payload, string contentType, Action<Response<T>> callback)
+      {
+         var request = BuildRequest(method, endPoint, null, callback);
+         if (request != null)
+         {
+            request.ContentType = contentType;
+
+#if DISABLE_ASYNC
+            SetupRequest(request, new RequestState<T> { Request = request, Payload = payload, Callback = callback });
+#else
+            request.BeginGetRequestStream(GetRequestStream<T>, new RequestState<T> { Request = request, Payload = payload, Callback = callback });
+#endif
+         }
+      }
+
+#if DISABLE_ASYNC
+      private static void SetupRequest<T>(HttpWebRequest request, RequestState<T> state)
+      {
+         using (var requestStream = request.GetRequestStream())
+         {
+            requestStream.Write(state.Payload, 0, state.Payload.Length);
+            requestStream.Flush();
+            requestStream.Close();
+         }
+         ProcessResponse(request, state);
+      }
+
+      private static void ProcessResponse<T>(HttpWebRequest request, RequestState<T> state)
+      {
+         try
+         {
+            using (var response = (HttpWebResponse)request.GetResponse())
+            {
+               if (state.Callback != null) { state.Callback(Response<T>.CreateSuccess(GetResponseBody(response))); }
+            }
+         }
+         catch (Exception ex)
+         {
+            if (state.Callback != null) { state.Callback(Response<T>.CreateError(HandleException(ex))); }
+         }
+      }
+#else
+      private static void GetRequestStream<T>(IAsyncResult result)
+      {
+         var state = (RequestState<T>)result.AsyncState;
+         using (var requestStream = state.Request.EndGetRequestStream(result))
+         {
+            requestStream.Write(state.Payload, 0, state.Payload.Length);
+            requestStream.Flush();
+            requestStream.Close();
+         }
+         state.Request.BeginGetResponse(GetResponseStream<T>, state);
+      }
+
+      private static void GetResponseStream<T>(IAsyncResult result)
+      {
+         var state = (ResponseState<T>)result.AsyncState;
+         try
+         {
+            using (var response = (HttpWebResponse)state.Request.EndGetResponse(result))
+            {
+               if (state.Callback != null) { state.Callback(Response<T>.CreateSuccess(GetResponseBody(response))); }
+            }
+         }
+         catch (Exception ex)
+         {
+            if (state.Callback != null) { state.Callback(Response<T>.CreateError(HandleException(ex))); }
+         }
+      }
+#endif
+
    }
 }
