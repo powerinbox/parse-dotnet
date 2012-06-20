@@ -7,12 +7,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parse.Tests", "Parse.Tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParseFull", "Parse\ParseFull.csproj", "{228A0996-6132-407D-8FC4-C74A7C3F0F13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parse.Playground", "Parse.Playground\Parse.Playground.csproj", "{19D9C1E6-D76B-49C3-A598-F766BC843A39}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1C5668B6-F7B4-4F31-8482-C2070DC64AE9}"
 	ProjectSection(SolutionItems) = preProject
 		parse.nuspec = parse.nuspec
 		readme.md = readme.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{E85D81C3-DBE3-4B0E-9B08-014652B14B8B}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
 Global
@@ -55,16 +60,6 @@ Global
 		{228A0996-6132-407D-8FC4-C74A7C3F0F13}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{228A0996-6132-407D-8FC4-C74A7C3F0F13}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{228A0996-6132-407D-8FC4-C74A7C3F0F13}.Release|x86.ActiveCfg = Release|Any CPU
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Debug|x86.ActiveCfg = Debug|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Debug|x86.Build.0 = Debug|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Release|Any CPU.ActiveCfg = Release|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Release|Mixed Platforms.Build.0 = Release|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Release|x86.ActiveCfg = Release|x86
-		{19D9C1E6-D76B-49C3-A598-F766BC843A39}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
