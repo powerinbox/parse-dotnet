@@ -45,6 +45,7 @@
     <Compile Include="Components\Json\DateConverter.cs" />
     <Compile Include="Components\Json\GeoPointConverter.cs" />
     <Compile Include="Components\Json\ParseFileConverter.cs" />
+    <Compile Include="Components\Json\ParseObjectContract.cs" />
     <Compile Include="Components\Json\ParseUserContract.cs" />
     <Compile Include="Components\ParseConfiguration.cs" />
     <Compile Include="Components\Response.cs" />
