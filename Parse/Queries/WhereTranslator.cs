@@ -90,7 +90,8 @@ namespace Parse.Queries
             }
             if (m.Expression.NodeType == ExpressionType.Parameter)
             {
-               _currentKey = m.Member.Name;
+               _currentKey = (m.Member.Name == "Id") ? "objectId" : m.Member.Name;
+
                if (!_where.ContainsKey(_currentKey))
                {
                   if (m.Member is PropertyInfo && ((PropertyInfo) m.Member).PropertyType == typeof (bool))
