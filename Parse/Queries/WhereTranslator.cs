@@ -92,6 +92,9 @@ namespace Parse.Queries
             {
                _currentKey = (m.Member.Name == "Id") ? "objectId" : m.Member.Name;
 
+               if (typeof(IParseUser).IsAssignableFrom(m.Expression.Type))
+                  _currentKey = ParseUserContract.ResolveName(_currentKey);
+
                if (!_where.ContainsKey(_currentKey))
                {
                   if (m.Member is PropertyInfo && ((PropertyInfo) m.Member).PropertyType == typeof (bool))
