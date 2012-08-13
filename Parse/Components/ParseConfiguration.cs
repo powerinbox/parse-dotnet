@@ -18,6 +18,9 @@ namespace Parse
       public string ApplicationId { get; private set; }
       public string RestApiKey { get; private set; }
       public string MasterKey { get; private set; }
+
+      public string SessionToken { get; private set; }
+
       public static ParseConfiguration Configuration
       {
          get { return _configuration; }
@@ -65,6 +68,11 @@ namespace Parse
          {
             action(_configuration);
          }
+      }
+
+      public static void SetSessionToken(string token)
+      {
+          _configuration.SessionToken = token;
       }
    }
 }

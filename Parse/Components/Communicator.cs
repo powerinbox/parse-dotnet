@@ -64,6 +64,10 @@ namespace Parse
          request.UserAgent = "parse-dotnet";
          request.Headers["X-Parse-Application-Id"] = configuration.ApplicationId;
          request.Headers["X-Parse-REST-API-Key"] = configuration.RestApiKey;
+         
+         if (!String.IsNullOrEmpty(configuration.SessionToken))
+            request.Headers["X-Parse-Session-Token"] = configuration.SessionToken;
+
          return request;
       }
 
