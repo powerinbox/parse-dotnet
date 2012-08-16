@@ -178,7 +178,7 @@ namespace Parse
       {
          Communicator.SendQueryPayload<ResultsResponse<T>>(Communicator.Get, UrlFor<T>(), selector, r =>
          {
-            if (r.Success) { r.Data = JsonConvert.DeserializeObject<ResultsResponse<T>>(r.Raw); }
+            if (r.Success) { r.Data = JsonConvert.DeserializeObject<ResultsResponse<T>>(r.Raw, _jsonSettings); }
             callback(r);
          });
       }
@@ -198,7 +198,7 @@ namespace Parse
          return r =>
          {
             if (callback == null) return;
-            if (r.Success) { r.Data = JsonConvert.DeserializeObject<T>(r.Raw); }
+            if (r.Success) { r.Data = JsonConvert.DeserializeObject<T>(r.Raw, _jsonSettings); }
             callback(r);
          };
       }
