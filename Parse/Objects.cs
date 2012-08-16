@@ -35,9 +35,14 @@ namespace Parse
 
    public class Objects : IObjects
    {
-      public static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
+      public static readonly JsonSerializerSettings _jsonSaveSettings = new JsonSerializerSettings
                                                                     {
                                                                        ContractResolver = new ParseObjectContract(),
+                                                                       Converters = Driver.SerializationConverters
+                                                                    };
+
+      public static readonly JsonSerializerSettings _jsonLoadSettings = new JsonSerializerSettings
+                                                                    {
                                                                        Converters = Driver.SerializationConverters
                                                                     };
 
@@ -48,7 +53,7 @@ namespace Parse
 
       public void Save(object o, Action<Response<ParseObject>> callback)
       {
-         var payload = JsonConvert.SerializeObject(o, _jsonSettings);
+         var payload = JsonConvert.SerializeObject(o, _jsonSaveSettings);
          Communicator.SendDataPayload<ParseObject>(Communicator.Post, UrlFor(o), payload, r =>
          {
             if (callback == null) return;
@@ -85,14 +90,14 @@ namespace Parse
       public void Update(string id, object o, Action<Response<DateTime>> callback)
       {
          var url = string.Concat(UrlFor(o), "/", id);
-         var payload = JsonConvert.SerializeObject(o, _jsonSettings);
+         var payload = JsonConvert.SerializeObject(o, _jsonSaveSettings);
          DoUpdate(url, payload, callback);
       }
 
       public void Update<T>(string id, IDictionary<string, object> document, Action<Response<DateTime>> callback)
       {
          var url = string.Concat(UrlFor<T>(), "/", id);
-         var payload = JsonConvert.SerializeObject(document, _jsonSettings);
+         var payload = JsonConvert.SerializeObject(document, _jsonSaveSettings);
          DoUpdate(url, payload, callback);
       }
 
@@ -178,7 +183,7 @@ namespace Parse
       {
          Communicator.SendQueryPayload<ResultsResponse<T>>(Communicator.Get, UrlFor<T>(), selector, r =>
          {
-            if (r.Success) { r.Data = JsonConvert.DeserializeObject<ResultsResponse<T>>(r.Raw, _jsonSettings); }
+            if (r.Success) { r.Data = JsonConvert.DeserializeObject<ResultsResponse<T>>(r.Raw, _jsonLoadSettings); }
             callback(r);
          });
       }
@@ -198,7 +203,7 @@ namespace Parse
          return r =>
          {
             if (callback == null) return;
-            if (r.Success) { r.Data = JsonConvert.DeserializeObject<T>(r.Raw, _jsonSettings); }
+            if (r.Success) { r.Data = JsonConvert.DeserializeObject<T>(r.Raw, _jsonLoadSettings); }
             callback(r);
          };
       }

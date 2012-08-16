@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Parse
 {
-   internal class ByteConverterr : JsonConverter
+   internal class ByteConverter : JsonConverter
    {
       public override bool CanConvert(Type type)
       {

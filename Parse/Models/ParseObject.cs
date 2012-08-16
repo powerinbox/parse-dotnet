@@ -14,8 +14,10 @@ namespace Parse
    {
       [JsonProperty("objectId")]
       public string Id { get; set; }
+
       [JsonProperty("createdAt")]
       public DateTime? CreatedAt { get; set; }
+
       [JsonProperty("updatedAt")]
       public DateTime? UpdatedAt { get; set; }
    }
