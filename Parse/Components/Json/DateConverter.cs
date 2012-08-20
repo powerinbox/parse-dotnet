@@ -19,7 +19,7 @@ namespace Parse
       public override object ReadJson(JsonReader reader, Type type, object existingValue, JsonSerializer serializer)
       {
          // Handle createdAt and updatedAt
-         if (reader.TokenType == JsonToken.Date)
+         if (reader.TokenType == JsonToken.Date || reader.TokenType == JsonToken.Null)
              return reader.Value;
 
          if (reader.TokenType != JsonToken.StartObject)
