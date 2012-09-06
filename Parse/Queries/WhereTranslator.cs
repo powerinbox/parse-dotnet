@@ -38,6 +38,15 @@ namespace Parse.Queries
       protected override Expression VisitBinary(BinaryExpression b)
       {
          ResetContext();
+
+         if (b.NodeType == ExpressionType.OrElse)
+         {
+             SetCompoundDictionary("$or");
+             Visit(b.Left);
+             Visit(b.Right);
+             return b;
+         }
+
          Visit(b.Left);
          switch (b.NodeType)
          {
@@ -160,6 +169,16 @@ namespace Parse.Queries
          }
          _currentOperation = operation;
          nested.Add(operation, null);
+      }
+
+      private void SetCompoundDictionary(string operation)
+      {
+          _currentKey = operation;
+          if (!_where.ContainsKey(_currentKey))
+          {
+              _where[_currentKey] = new Dictionary<string, object>(2);
+          }
+          _currentOperation = operation;
       }
 
       private void SetValue(object o)
