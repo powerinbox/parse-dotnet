@@ -10,7 +10,8 @@ namespace Parse.Queries
         protected virtual Expression Visit(Expression exp)
         {
             if (exp == null)
-                return exp;
+                return null;
+
             switch (exp.NodeType)
             {
                 case ExpressionType.Negate:
@@ -184,13 +185,13 @@ namespace Parse.Queries
         protected virtual MemberMemberBinding VisitMemberMemberBinding(MemberMemberBinding binding)
         {
             var bindings = VisitBindingList(binding.Bindings);
-            return bindings != binding.Bindings ? Expression.MemberBind(binding.Member, bindings) : binding;
+            return !Equals(bindings, binding.Bindings) ? Expression.MemberBind(binding.Member, bindings) : binding;
         }
 
         protected virtual MemberListBinding VisitMemberListBinding(MemberListBinding binding)
         {
             var initializers = VisitElementInitializerList(binding.Initializers);
-            return initializers != binding.Initializers ? Expression.ListBind(binding.Member, initializers) : binding;
+            return !Equals(initializers, binding.Initializers) ? Expression.ListBind(binding.Member, initializers) : binding;
         }
 
         protected virtual IEnumerable<MemberBinding> VisitBindingList(ReadOnlyCollection<MemberBinding> original)
@@ -248,21 +249,21 @@ namespace Parse.Queries
         protected virtual NewExpression VisitNew(NewExpression nex)
         {
             var args = VisitExpressionList(nex.Arguments);
-            return args != nex.Arguments ? (nex.Members != null ? Expression.New(nex.Constructor, args, nex.Members) : Expression.New(nex.Constructor, args)) : nex;
+            return args != nex.Arguments ? (Expression.New(nex.Constructor, args, nex.Members)) : nex;
         }
 
         protected virtual Expression VisitMemberInit(MemberInitExpression init)
         {
             var n = VisitNew(init.NewExpression);
             var bindings = VisitBindingList(init.Bindings);
-            return n != init.NewExpression || bindings != init.Bindings ? Expression.MemberInit(n, bindings) : init;
+            return n != init.NewExpression || !Equals(bindings, init.Bindings) ? Expression.MemberInit(n, bindings) : init;
         }
 
         protected virtual Expression VisitListInit(ListInitExpression init)
         {
             var n = VisitNew(init.NewExpression);
             var initializers = VisitElementInitializerList(init.Initializers);
-            return n != init.NewExpression || initializers != init.Initializers ? Expression.ListInit(n, initializers) : init;
+            return n != init.NewExpression || !Equals(initializers, init.Initializers) ? Expression.ListInit(n, initializers) : init;
         }
 
         protected virtual Expression VisitNewArray(NewArrayExpression na)
