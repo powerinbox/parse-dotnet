@@ -14,7 +14,7 @@ namespace Parse
     public class Users : Objects, IUsers
     {
         private const string _endPoint = "users";
-        public static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
+        public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
                                                                       {
                                                                           ContractResolver = new ParseUserContract(),
                                                                           Converters = Driver.SerializationConverters
@@ -27,7 +27,7 @@ namespace Parse
 
         public void Register(IParseUser user, Action<Response<ParseObject>> callback)
         {
-            var payload = JsonConvert.SerializeObject(user, Formatting.None, _jsonSettings);
+            var payload = JsonConvert.SerializeObject(user, Formatting.None, JsonSettings);
             Communicator.SendDataPayload<ParseObject>(Communicator.Post, _endPoint, payload, r =>
             {
                 if (callback == null) return;
