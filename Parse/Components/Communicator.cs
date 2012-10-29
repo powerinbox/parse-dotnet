@@ -7,217 +7,217 @@ using Newtonsoft.Json;
 
 namespace Parse
 {
-   internal static class Communicator
-   {
-      public const string Get = "GET";
-      public const string Put = "PUT";
-      public const string Post = "POST";
-      public const string Delete = "DELETE";
+    internal static class Communicator
+    {
+        public const string Get = "GET";
+        public const string Put = "PUT";
+        public const string Post = "POST";
+        public const string Delete = "DELETE";
 
-      private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore, };
+        private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore, };
 
-      public static void SendQueryPayload<T>(string method, string endPoint, Action<Response<T>> callback)
-      {
-         SendQueryPayload(method, endPoint, null, false, callback);
-      }
+        public static void SendQueryPayload<T>(string method, string endPoint, Action<Response<T>> callback)
+        {
+            SendQueryPayload(method, endPoint, null, false, callback);
+        }
 
-      public static void SendQueryPayload<T>(string method, string endPoint, bool includeMasterKey, Action<Response<T>> callback)
-      {
-         SendQueryPayload(method, endPoint, null, includeMasterKey, callback);
-      }
+        public static void SendQueryPayload<T>(string method, string endPoint, bool includeMasterKey, Action<Response<T>> callback)
+        {
+            SendQueryPayload(method, endPoint, null, includeMasterKey, callback);
+        }
 
-      public static void SendQueryPayload<T>(string method, string endPoint, IDictionary<string, object> payload, Action<Response<T>> callback)
-      {
-         SendQueryPayload(method, endPoint, payload == null ? null : DictionaryToQueryString(payload), callback);
-      }
+        public static void SendQueryPayload<T>(string method, string endPoint, IDictionary<string, object> payload, Action<Response<T>> callback)
+        {
+            SendQueryPayload(method, endPoint, payload == null ? null : DictionaryToQueryString(payload), callback);
+        }
 
-      public static void SendQueryPayload<T>(string method, string endPoint, string query, Action<Response<T>> callback)
-      {
-         SendQueryPayload(method, endPoint, query, false, callback);
-      }
+        public static void SendQueryPayload<T>(string method, string endPoint, string query, Action<Response<T>> callback)
+        {
+            SendQueryPayload(method, endPoint, query, false, callback);
+        }
 
-      public static void SendDataPayload<T>(string method, string endPoint, string payload, Action<Response<T>> callback)
-      {
-         SendDataPayload(method, endPoint, payload, "application/json", callback);
-      }
+        public static void SendDataPayload<T>(string method, string endPoint, string payload, Action<Response<T>> callback)
+        {
+            SendDataPayload(method, endPoint, payload, "application/json", callback);
+        }
 
-      public static void SendDataPayload<T>(string method, string endPoint, string payload, string contentType, Action<Response<T>> callback)
-      {
-         SendDataPayload(method, endPoint, Encoding.UTF8.GetBytes(payload), contentType, callback);
-      }
+        public static void SendDataPayload<T>(string method, string endPoint, string payload, string contentType, Action<Response<T>> callback)
+        {
+            SendDataPayload(method, endPoint, Encoding.UTF8.GetBytes(payload), contentType, callback);
+        }
 
-      private static HttpWebRequest BuildRequest<T>(string method, string endPoint, string queryString, Action<Response<T>> callback)
-      {
-         var configuration = ParseConfiguration.Configuration;
-         if (!configuration.NetworkCheck())
-         {
-            if (callback != null) { callback(Response<T>.CreateError(new ErrorMessage { Message = "Network is not available" })); }
-            return null;
-         }
-         var url = string.Concat(configuration.Url, ParseConfiguration.ApiVersion, "/", endPoint);
-         if (queryString != null)
-         {
-            url += string.Concat('?', queryString);
-         }
-         var request = (HttpWebRequest)WebRequest.Create(url);
-         request.Method = method;
-         request.UserAgent = "parse-dotnet";
-         request.Headers["X-Parse-Application-Id"] = configuration.ApplicationId;
-         request.Headers["X-Parse-REST-API-Key"] = configuration.RestApiKey;
-         
-         if (!String.IsNullOrEmpty(configuration.SessionToken))
-            request.Headers["X-Parse-Session-Token"] = configuration.SessionToken;
-
-         return request;
-      }
-
-      private static string DictionaryToQueryString(IEnumerable<KeyValuePair<string, object>> payload)
-      {
-         var sb = new StringBuilder();
-         foreach (var kvp in payload)
-         {
-            if (kvp.Value == null) { continue; }
-            var valueType = kvp.Value.GetType();
-            if (!typeof(string).IsAssignableFrom(valueType) && typeof(IEnumerable).IsAssignableFrom(valueType))
+        private static HttpWebRequest BuildRequest<T>(string method, string endPoint, string queryString, Action<Response<T>> callback)
+        {
+            var configuration = ParseConfiguration.Configuration;
+            if (!configuration.NetworkCheck())
             {
-               sb.Append(Serialize(kvp.Key, (IEnumerable) kvp.Value));
+                if (callback != null) { callback(Response<T>.CreateError(new ErrorMessage { Message = "Network is not available" })); }
+                return null;
             }
-            else
+            var url = string.Concat(configuration.Url, ParseConfiguration.ApiVersion, "/", endPoint);
+            if (queryString != null)
             {
-               sb.Append(SerializeSingleParameter(kvp.Key, kvp.Value.ToString()));
+                url += string.Concat('?', queryString);
             }
-         }
-         return sb.Remove(sb.Length - 1, 1).ToString();
-      }
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = method;
+            request.UserAgent = "parse-dotnet";
+            request.Headers["X-Parse-Application-Id"] = configuration.ApplicationId;
+            request.Headers["X-Parse-REST-API-Key"] = configuration.RestApiKey;
 
-      private static string Serialize(string key, IEnumerable values)
-      {
-         var sb = new StringBuilder();
-         foreach(var value in values)
-         {
-            sb.Append(SerializeSingleParameter(key, value.ToString()));
-         }
-         return sb.ToString();
-      }
+            if (!String.IsNullOrEmpty(configuration.SessionToken))
+                request.Headers["X-Parse-Session-Token"] = configuration.SessionToken;
 
-      private static string SerializeSingleParameter(string key, string value)
-      {
-         return string.Concat(key, '=', Uri.EscapeDataString(value), '&');
-      }
+            return request;
+        }
 
-      private static string GetResponseBody(WebResponse response)
-      {
-         using (var stream = response.GetResponseStream())
-         {
+        private static string DictionaryToQueryString(IEnumerable<KeyValuePair<string, object>> payload)
+        {
             var sb = new StringBuilder();
-            int read;
-            var bufferSize = response.ContentLength == -1 ? 2048 : (int)response.ContentLength;
-            if (bufferSize == 0) { return null; }
-            do
+            foreach (var kvp in payload)
             {
-               var buffer = new byte[2048];
-               read = stream.Read(buffer, 0, buffer.Length);
-               sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
-            } while (read > 0);
+                if (kvp.Value == null) { continue; }
+                var valueType = kvp.Value.GetType();
+                if (!typeof(string).IsAssignableFrom(valueType) && typeof(IEnumerable).IsAssignableFrom(valueType))
+                {
+                    sb.Append(Serialize(kvp.Key, (IEnumerable)kvp.Value));
+                }
+                else
+                {
+                    sb.Append(SerializeSingleParameter(kvp.Key, kvp.Value.ToString()));
+                }
+            }
+            return sb.Remove(sb.Length - 1, 1).ToString();
+        }
+
+        private static string Serialize(string key, IEnumerable values)
+        {
+            var sb = new StringBuilder();
+            foreach (var value in values)
+            {
+                sb.Append(SerializeSingleParameter(key, value.ToString()));
+            }
             return sb.ToString();
-         }
-      }
+        }
 
-      private static ErrorMessage HandleException(Exception exception)
-      {
-         if (exception is WebException)
-         {
-            var response = ((WebException) exception).Response;
-            if (response == null)
+        private static string SerializeSingleParameter(string key, string value)
+        {
+            return string.Concat(key, '=', Uri.EscapeDataString(value), '&');
+        }
+
+        private static string GetResponseBody(WebResponse response)
+        {
+            using (var stream = response.GetResponseStream())
             {
-               return new ErrorMessage {Message = "Null response (wakeup from rehydrating (multitasking)?)", InnerException = exception};
+                var sb = new StringBuilder();
+                int read;
+                var bufferSize = response.ContentLength == -1 ? 2048 : (int)response.ContentLength;
+                if (bufferSize == 0) { return null; }
+                do
+                {
+                    var buffer = new byte[2048];
+                    read = stream.Read(buffer, 0, buffer.Length);
+                    sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
+                } while (read > 0);
+                return sb.ToString();
             }
-            var body = GetResponseBody(response);
-            try
+        }
+
+        private static ErrorMessage HandleException(Exception exception)
+        {
+            if (exception is WebException)
             {
-               var message = JsonConvert.DeserializeObject<ErrorMessage>(body, _jsonSettings);
-               message.InnerException = exception;
-               return message;
+                var response = ((WebException)exception).Response;
+                if (response == null)
+                {
+                    return new ErrorMessage { Message = "Null response (wakeup from rehydrating (multitasking)?)", InnerException = exception };
+                }
+                var body = GetResponseBody(response);
+                try
+                {
+                    var message = JsonConvert.DeserializeObject<ErrorMessage>(body, _jsonSettings);
+                    message.InnerException = exception;
+                    return message;
+                }
+                catch (Exception)
+                {
+                    return new ErrorMessage { Message = body, InnerException = exception };
+                }
             }
-            catch (Exception)
+            return new ErrorMessage { Message = "Unknown Error", InnerException = exception };
+        }
+
+        private class ResponseState<T>
+        {
+            public HttpWebRequest Request { get; set; }
+            public Action<Response<T>> Callback { get; set; }
+        }
+
+        private class RequestState<T> : ResponseState<T>
+        {
+            public byte[] Payload { get; set; }
+        }
+
+
+        public static void SendQueryPayload<T>(string method, string endPoint, string query, bool includeMasterKey, Action<Response<T>> callback)
+        {
+            var request = BuildRequest(method, endPoint, query, callback);
+            if (request != null)
             {
-               return new ErrorMessage { Message = body, InnerException = exception };
-            }
-         }
-         return new ErrorMessage { Message = "Unknown Error", InnerException = exception };
-      }
-
-      private class ResponseState<T>
-      {
-         public HttpWebRequest Request { get; set; }
-         public Action<Response<T>> Callback { get; set; }
-      }
-
-      private class RequestState<T> : ResponseState<T>
-      {
-         public byte[] Payload { get; set; }
-      }
-
-
-      public static void SendQueryPayload<T>(string method, string endPoint, string query, bool includeMasterKey, Action<Response<T>> callback)
-      {
-         var request = BuildRequest(method, endPoint, query, callback);
-         if (request != null)
-         {
-            if (includeMasterKey)
-            {
-               request.Headers["X-Parse-Master-Key"] = ParseConfiguration.Configuration.MasterKey;
-            }
+                if (includeMasterKey)
+                {
+                    request.Headers["X-Parse-Master-Key"] = ParseConfiguration.Configuration.MasterKey;
+                }
 
 #if DISABLE_ASYNC
-            ProcessResponse(request, new RequestState<T> { Request = request, Callback = callback });
+                ProcessResponse(request, new RequestState<T> { Request = request, Callback = callback });
 #else
             request.BeginGetResponse(GetResponseStream<T>, new RequestState<T> { Request = request, Callback = callback });
 #endif
-         }
-      }
+            }
+        }
 
-      public static void SendDataPayload<T>(string method, string endPoint, byte[] payload, string contentType, Action<Response<T>> callback)
-      {
-         var request = BuildRequest(method, endPoint, null, callback);
-         if (request != null)
-         {
-            request.ContentType = contentType;
+        public static void SendDataPayload<T>(string method, string endPoint, byte[] payload, string contentType, Action<Response<T>> callback)
+        {
+            var request = BuildRequest(method, endPoint, null, callback);
+            if (request != null)
+            {
+                request.ContentType = contentType;
 
 #if DISABLE_ASYNC
-            SetupRequest(request, new RequestState<T> { Request = request, Payload = payload, Callback = callback });
+                SetupRequest(request, new RequestState<T> { Request = request, Payload = payload, Callback = callback });
 #else
             request.BeginGetRequestStream(GetRequestStream<T>, new RequestState<T> { Request = request, Payload = payload, Callback = callback });
 #endif
-         }
-      }
+            }
+        }
 
 #if DISABLE_ASYNC
-      private static void SetupRequest<T>(HttpWebRequest request, RequestState<T> state)
-      {
-         using (var requestStream = request.GetRequestStream())
-         {
-            requestStream.Write(state.Payload, 0, state.Payload.Length);
-            requestStream.Flush();
-            requestStream.Close();
-         }
-         ProcessResponse(request, state);
-      }
-
-      private static void ProcessResponse<T>(HttpWebRequest request, RequestState<T> state)
-      {
-         try
-         {
-            using (var response = (HttpWebResponse)request.GetResponse())
+        private static void SetupRequest<T>(HttpWebRequest request, RequestState<T> state)
+        {
+            using (var requestStream = request.GetRequestStream())
             {
-               if (state.Callback != null) { state.Callback(Response<T>.CreateSuccess(GetResponseBody(response))); }
+                requestStream.Write(state.Payload, 0, state.Payload.Length);
+                requestStream.Flush();
+                requestStream.Close();
             }
-         }
-         catch (Exception ex)
-         {
-            if (state.Callback != null) { state.Callback(Response<T>.CreateError(HandleException(ex))); }
-         }
-      }
+            ProcessResponse(request, state);
+        }
+
+        private static void ProcessResponse<T>(HttpWebRequest request, RequestState<T> state)
+        {
+            try
+            {
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    if (state.Callback != null) { state.Callback(Response<T>.CreateSuccess(GetResponseBody(response))); }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (state.Callback != null) { state.Callback(Response<T>.CreateError(HandleException(ex))); }
+            }
+        }
 #else
       private static void GetRequestStream<T>(IAsyncResult result)
       {
@@ -248,5 +248,5 @@ namespace Parse
       }
 #endif
 
-   }
+    }
 }
