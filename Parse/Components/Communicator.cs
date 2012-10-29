@@ -109,6 +109,9 @@ namespace Parse
         {
             using (var stream = response.GetResponseStream())
             {
+                if (stream == null)
+                    return null;
+
                 var sb = new StringBuilder();
                 int read;
                 var bufferSize = response.ContentLength == -1 ? 2048 : (int)response.ContentLength;
@@ -125,9 +128,10 @@ namespace Parse
 
         private static ErrorMessage HandleException(Exception exception)
         {
-            if (exception is WebException)
+            var webException = exception as WebException;
+            if (webException != null)
             {
-                var response = ((WebException)exception).Response;
+                var response = webException.Response;
                 if (response == null)
                 {
                     return new ErrorMessage { Message = "Null response (wakeup from rehydrating (multitasking)?)", InnerException = exception };
